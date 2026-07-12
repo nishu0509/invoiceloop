@@ -39,7 +39,7 @@ export default function Dashboard() {
     setError("");
     try {
       const res = await axios.get(
-        "http://localhost:5000/api/v1/invoice/all",
+        `${import.meta.env.VITE_API_URL}/invoice/all`,
         authHeader()
       );
       setInvoices(res.data.invoices || []);
@@ -71,14 +71,14 @@ export default function Dashboard() {
     try {
       if (editingId) {
         await axios.put(
-          `http://localhost:5000/api/v1/invoice/update/${editingId}`,
+          `${import.meta.env.VITE_API_URL}/invoice/update/${editingId}`,
           formData,
           authHeader()
         );
         toast.success("Invoice updated successfully");
       } else {
         await axios.post(
-          "http://localhost:5000/api/v1/invoice/create",
+          `${import.meta.env.VITE_API_URL}/invoice/create`,
           formData,
           authHeader()
         );
@@ -101,7 +101,7 @@ export default function Dashboard() {
     const newStatus = invoice.status === "Paid" ? "Pending" : "Paid";
     try {
       await axios.put(
-        `http://localhost:5000/api/v1/invoice/update/${invoice._id}`,
+        `${import.meta.env.VITE_API_URL}/invoice/update/${invoice._id}`,
         { status: newStatus },
         authHeader()
       );
@@ -130,7 +130,7 @@ export default function Dashboard() {
 
     try {
       await axios.delete(
-        `http://localhost:5000/api/v1/invoice/delete/${id}`,
+        `${import.meta.env.VITE_API_URL}/invoice/delete/${id}`,
         authHeader()
       );
       if (editingId === id) resetForm();
