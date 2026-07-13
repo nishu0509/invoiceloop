@@ -81,7 +81,7 @@ npm run dev
 
 | Sign In | Register | Dashboard |
 | --- | --- | --- |
-| ![Sign in](docs/screenshots/signin.jpeg) | ![Register](docs/screenshots/register.jpg) | ![Dashboard](docs/screenshots/dashboard.jpeg) |
+| ![Sign in](docs/screenshots/signin.jpeg) | ![Register](docs/screenshots/register.jpeg) | ![Dashboard](docs/screenshots/dashboard.jpeg) |
 
 ## License
 
