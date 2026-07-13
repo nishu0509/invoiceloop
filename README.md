@@ -2,7 +2,7 @@
 
 > Recurring invoice tracking for freelancers — create invoices, track who owes you, and get paid on time.
 
-![InvoiceLoop hero screenshot](docs/screenshots/hero.jpg)
+![InvoiceLoop hero screenshot](docs/screenshots/hero.jpeg)
 
 **Live demo →** https://invoiceloop-black.vercel.app
 
@@ -81,7 +81,7 @@ npm run dev
 
 | Sign In | Register | Dashboard |
 | --- | --- | --- |
-| ![Sign in](docs/screenshots/signin.jpg) | ![Register](docs/screenshots/register.jpg) | ![Dashboard](docs/screenshots/dashboard.jpg) |
+| ![Sign in](docs/screenshots/signin.jpeg) | ![Register](docs/screenshots/register.jpg) | ![Dashboard](docs/screenshots/dashboard.jpeg) |
 
 ## License
 
