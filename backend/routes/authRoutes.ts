@@ -1,12 +1,22 @@
 import express, { Request, Response } from 'express';
+import rateLimit from 'express-rate-limit';
 import { registerUser, loginUser } from '../controllers/authController';
 import authMiddleware from '../middlewares/authMiddleware';
 
 const router = express.Router();
 
-router.post('/register', registerUser);
+const authLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 10,
+    message: {
+        success: false,
+        message: "Too many requests, please try again later."
+    }
+});
 
-router.post('/login', loginUser);
+router.post('/register', authLimiter, registerUser);
+
+router.post('/login', authLimiter, loginUser);
 
 router.get('/current-user', authMiddleware, async (req: Request, res: Response) => {
     try {
