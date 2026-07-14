@@ -1,7 +1,16 @@
-const mongoose = require('mongoose');
-const bcrypt = require('bcryptjs');
+import mongoose, { Document, Model, Schema } from 'mongoose';
+import bcrypt from 'bcryptjs';
 
-const userSchema = new mongoose.Schema({
+export interface IUser extends Document {
+    name: string;
+    email: string;
+    password: string;
+    role: 'admin' | 'client';
+    createdAt: Date;
+    matchPassword(enteredPassword: string): Promise<boolean>;
+}
+
+const userSchema = new Schema<IUser>({
     name: {
         type: String,
         required: [true, 'Please add a name']
@@ -19,7 +28,7 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: [true, 'Please add a password'],
         minlength: 6,
-        select: false 
+        select: false
     },
     role: {
         type: String,
@@ -32,17 +41,23 @@ const userSchema = new mongoose.Schema({
     }
 });
 
-userSchema.pre('save', async function(next) {
+userSchema.pre('save', async function (next) {
     if (!this.isModified('password')) {
         next();
     }
     const salt = await bcrypt.genSalt(10);
     this.password = await bcrypt.hash(this.password, salt);
+    next();
 });
 
 // Login Method: Password match karne ke liye custom function
-userSchema.methods.matchPassword = async function(enteredPassword) {
+userSchema.methods.matchPassword = async function (
+    this: IUser,
+    enteredPassword: string
+): Promise<boolean> {
     return await bcrypt.compare(enteredPassword, this.password);
 };
 
-module.exports = mongoose.model('User', userSchema);
+const User: Model<IUser> = mongoose.model<IUser>('User', userSchema);
+
+export default User;

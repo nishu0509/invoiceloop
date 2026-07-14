@@ -1,13 +1,14 @@
-const User = require('../models/User');
-const jwt = require('jsonwebtoken');
+import { Request, Response } from 'express';
+import jwt from 'jsonwebtoken';
+import User from '../models/User';
 
-const generateToken = (id) => {
-    return jwt.sign({ id }, process.env.JWT_SECRET, {
+const generateToken = (id: string): string => {
+    return jwt.sign({ id }, process.env.JWT_SECRET as string, {
         expiresIn: '30d'
     });
 };
 
-exports.registerUser = async (req, res) => {
+export const registerUser = async (req: Request, res: Response): Promise<Response> => {
     try {
         const { name, email, password, role } = req.body;
 
@@ -18,17 +19,18 @@ exports.registerUser = async (req, res) => {
 
         const user = await User.create({ name, email, password, role });
 
-        res.status(201).json({
+        return res.status(201).json({
             success: true,
-            token: generateToken(user._id),
+            token: generateToken(user._id.toString()),
             data: { id: user._id, name: user.name, email: user.email, role: user.role }
         });
     } catch (error) {
-        res.status(500).json({ success: false, error: error.message });
+        const message = error instanceof Error ? error.message : String(error);
+        return res.status(500).json({ success: false, error: message });
     }
 };
 
-exports.loginUser = async (req, res) => {
+export const loginUser = async (req: Request, res: Response): Promise<Response> => {
     try {
         const { email, password } = req.body;
 
@@ -42,12 +44,13 @@ exports.loginUser = async (req, res) => {
             return res.status(401).json({ success: false, error: 'Invalid credentials' });
         }
 
-        res.status(200).json({
+        return res.status(200).json({
             success: true,
-            token: generateToken(user._id),
+            token: generateToken(user._id.toString()),
             data: { id: user._id, name: user.name, email: user.email, role: user.role }
         });
     } catch (error) {
-        res.status(500).json({ success: false, error: error.message });
+        const message = error instanceof Error ? error.message : String(error);
+        return res.status(500).json({ success: false, error: message });
     }
 };

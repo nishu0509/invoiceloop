@@ -1,33 +1,40 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, type ChangeEvent, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import toast from "react-hot-toast";
 
+interface Invoice {
+  _id: string;
+  clientName: string;
+  clientEmail?: string;
+  amount: number;
+  status: string;
+  dueDate?: string;
+}
+
+interface InvoiceFormData {
+  clientName: string;
+  clientEmail: string;
+  amount: string;
+  dueDate: string;
+}
+
 export default function Dashboard() {
   const navigate = useNavigate();
 
-  const [invoices, setInvoices] = useState([]);
+  const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [formData, setFormData] = useState({ clientName: "", clientEmail: "", amount: "", dueDate: "" });
+  const [formData, setFormData] = useState<InvoiceFormData>({ clientName: "", clientEmail: "", amount: "", dueDate: "" });
   const [saving, setSaving] = useState(false);
 
-  const [editingId, setEditingId] = useState(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
 
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
   const [sortBy, setSortBy] = useState("dueDate-asc");
-
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      navigate("/");
-      return;
-    }
-    fetchInvoices();
-  }, []);
 
   const authHeader = () => {
     const token = localStorage.getItem("token");
@@ -44,7 +51,7 @@ export default function Dashboard() {
       );
       setInvoices(res.data.invoices || []);
     } catch (err) {
-      if (err.response?.status === 401) {
+      if (axios.isAxiosError(err) && err.response?.status === 401) {
         localStorage.removeItem("token");
         navigate("/");
         return;
@@ -55,7 +62,18 @@ export default function Dashboard() {
     }
   };
 
-  const handleChange = (e) => {
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      navigate("/");
+      return;
+    }
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- standard fetch-on-mount pattern
+    fetchInvoices();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
@@ -64,7 +82,7 @@ export default function Dashboard() {
     setEditingId(null);
   };
 
-  const handleSave = async (e) => {
+  const handleSave = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setSaving(true);
     setError("");
@@ -86,7 +104,7 @@ export default function Dashboard() {
       }
       resetForm();
       fetchInvoices();
-    } catch (err) {
+    } catch {
       const message = editingId
         ? "Could not update invoice. Please check the fields and try again."
         : "Could not create invoice. Please check the fields and try again.";
@@ -97,7 +115,7 @@ export default function Dashboard() {
     }
   };
 
-  const toggleStatus = async (invoice) => {
+  const toggleStatus = async (invoice: Invoice) => {
     const newStatus = invoice.status === "Paid" ? "Pending" : "Paid";
     try {
       await axios.put(
@@ -107,24 +125,24 @@ export default function Dashboard() {
       );
       fetchInvoices();
       toast.success(`Marked as ${newStatus}`);
-    } catch (err) {
+    } catch {
       setError("Could not update status.");
       toast.error("Could not update status");
     }
   };
 
-  const startEdit = (invoice) => {
+  const startEdit = (invoice: Invoice) => {
     setFormData({
       clientName: invoice.clientName || "",
       clientEmail: invoice.clientEmail || "",
-      amount: invoice.amount || "",
+      amount: invoice.amount ? String(invoice.amount) : "",
       dueDate: invoice.dueDate ? invoice.dueDate.slice(0, 10) : "",
     });
     setEditingId(invoice._id);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const deleteInvoice = async (id) => {
+  const deleteInvoice = async (id: string) => {
     const confirmDelete = window.confirm("Delete this invoice? This cannot be undone.");
     if (!confirmDelete) return;
 
@@ -136,7 +154,7 @@ export default function Dashboard() {
       if (editingId === id) resetForm();
       fetchInvoices();
       toast.success("Invoice deleted");
-    } catch (err) {
+    } catch {
       setError("Could not delete invoice.");
       toast.error("Could not delete invoice");
     }
@@ -147,7 +165,7 @@ export default function Dashboard() {
     navigate("/");
   };
 
-  const downloadInvoicePdf = (invoice) => {
+  const downloadInvoicePdf = (invoice: Invoice) => {
     const doc = new jsPDF();
 
     doc.setFont("times", "bold");
@@ -200,8 +218,8 @@ export default function Dashboard() {
     toast.success("PDF downloaded");
   };
 
-  const isOverdue = (inv) =>
-    inv.status !== "Paid" && inv.dueDate && new Date(inv.dueDate) < new Date();
+  const isOverdue = (inv: Invoice) =>
+    inv.status !== "Paid" && !!inv.dueDate && new Date(inv.dueDate) < new Date();
 
   const totalOutstanding = invoices
     .filter((inv) => inv.status !== "Paid")
@@ -233,7 +251,7 @@ export default function Dashboard() {
 
     const [key, dir] = sortBy.split("-");
     result.sort((a, b) => {
-      let valA, valB;
+      let valA: number | string, valB: number | string;
       if (key === "amount") {
         valA = Number(a.amount || 0);
         valB = Number(b.amount || 0);
@@ -252,7 +270,7 @@ export default function Dashboard() {
     return result;
   }, [invoices, search, statusFilter, sortBy]);
 
-  const statusStyles = {
+  const statusStyles: Record<string, string> = {
     Paid: "text-[#79947a] bg-[#79947a]/10",
     Pending: "text-[#b8894f] bg-[#b8894f]/10",
     Unpaid: "text-[#b85f4f] bg-[#b85f4f]/10",
@@ -555,7 +573,13 @@ export default function Dashboard() {
   );
 }
 
-function StatCard({ label, value, accent }) {
+interface StatCardProps {
+  label: string;
+  value: string | number;
+  accent: string;
+}
+
+function StatCard({ label, value, accent }: StatCardProps) {
   return (
     <div className="border border-[#1e2022] rounded p-4 sm:p-6 bg-[#0d0f11]">
       <p className="text-[10px] tracking-widest uppercase text-[#888] mb-2 sm:mb-3">{label}</p>

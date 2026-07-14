@@ -1,6 +1,6 @@
-const express = require('express');
-const { registerUser, loginUser } = require('../controllers/authController');
-const authMiddleware = require('../middlewares/authMiddleware');
+import express, { Request, Response } from 'express';
+import { registerUser, loginUser } from '../controllers/authController';
+import authMiddleware from '../middlewares/authMiddleware';
 
 const router = express.Router();
 
@@ -8,7 +8,7 @@ router.post('/register', registerUser);
 
 router.post('/login', loginUser);
 
-router.get('/current-user', authMiddleware, async (req, res) => {
+router.get('/current-user', authMiddleware, async (req: Request, res: Response) => {
     try {
         res.status(200).send({
             success: true,
@@ -24,4 +24,4 @@ router.get('/current-user', authMiddleware, async (req, res) => {
     }
 });
 
-module.exports = router;
+export default router;

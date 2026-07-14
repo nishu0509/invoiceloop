@@ -1,36 +1,38 @@
-import { useState } from "react";
+import { useState, type ChangeEvent, type FormEvent } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 
-export default function Login() {
+interface RegisterFormData {
+  name: string;
+  email: string;
+  password: string;
+}
+
+export default function Register() {
   const [showPassword, setShowPassword] = useState(false);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [formData, setFormData] = useState<RegisterFormData>({ name: "", email: "", password: "" });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
-  const handleLogin = async (e) => {
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError("");
     setLoading(true);
 
     try {
-      const res = await axios.post(`${import.meta.env.VITE_API_URL}/auth/login`, {
-        email,
-        password,
-      });
-
-      if (res.data.success) {
-        localStorage.setItem("token", res.data.token);
-        navigate("/dashboard");
-      } else {
-        setError(res.data.error || "Login failed. Please try again.");
-      }
+      await axios.post(`${import.meta.env.VITE_API_URL}/auth/register`, formData);
+      navigate("/");
     } catch (err) {
       const message =
-        err.response?.data?.error || "Invalid credentials. Please try again.";
+        (axios.isAxiosError(err) &&
+          (err.response?.data?.message || err.response?.data?.error)) ||
+        "Something went wrong. Please try again.";
       setError(message);
     } finally {
       setLoading(false);
@@ -39,6 +41,7 @@ export default function Login() {
 
   return (
     <div className="flex min-h-screen w-full bg-[#0d0f11] text-[#e0dcc8]">
+      {/* Left Side: Branding & Info */}
       <div className="hidden lg:flex flex-1 flex-col justify-between p-16 border-r border-[#1e2022]">
         <div>
           <div className="flex items-center gap-3 mb-10">
@@ -49,7 +52,7 @@ export default function Login() {
             <span className="text-[11px] tracking-[0.2em] uppercase text-[#888]">InvoiceLoop</span>
           </div>
 
-          <h1 className="text-5xl font-serif leading-tight mb-6">InvoiceLoop<br />Management.</h1>
+          <h1 className="text-5xl font-serif leading-tight mb-6">Join<br />InvoiceLoop.</h1>
           <p className="max-w-md text-lg text-[#888]">Centralized workspace to track, manage, and verify your professional billing cycles.</p>
         </div>
 
@@ -64,11 +67,12 @@ export default function Login() {
         </div>
       </div>
 
+      {/* Right Side: Form */}
       <div className="flex-1 flex items-center justify-center p-8 bg-[#f4ede4]">
-        <form onSubmit={handleLogin} className="w-full max-w-sm space-y-8 text-[#1a1a1a]">
+        <form onSubmit={handleSubmit} className="w-full max-w-sm space-y-8 text-[#1a1a1a]">
           <div>
             <p className="text-[10px] tracking-widest uppercase mb-2 text-[#b8894f]">Authorization</p>
-            <h2 className="text-3xl font-serif">Sign In</h2>
+            <h2 className="text-3xl font-serif">Create Account</h2>
           </div>
 
           {error && (
@@ -79,11 +83,25 @@ export default function Login() {
 
           <div className="space-y-6">
             <div>
+              <label className="block text-[10px] uppercase tracking-widest mb-2 text-[#8a8168]">Full Name</label>
+              <input
+                type="text"
+                name="name"
+                value={formData.name}
+                onChange={handleChange}
+                placeholder="Enter full name"
+                required
+                className="w-full bg-transparent border-b border-[#c8b9a8] py-2 focus:outline-none focus:border-[#b8894f] transition-colors placeholder:text-[#a89a8a]"
+              />
+            </div>
+
+            <div>
               <label className="block text-[10px] uppercase tracking-widest mb-2 text-[#8a8168]">Email</label>
               <input
                 type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
                 placeholder="Enter email"
                 required
                 className="w-full bg-transparent border-b border-[#c8b9a8] py-2 focus:outline-none focus:border-[#b8894f] transition-colors placeholder:text-[#a89a8a]"
@@ -95,10 +113,12 @@ export default function Login() {
               <div className="relative">
                 <input
                   type={showPassword ? "text" : "password"}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  name="password"
+                  value={formData.password}
+                  onChange={handleChange}
                   placeholder="••••••••"
                   required
+                  minLength={6}
                   className="w-full bg-transparent border-b border-[#c8b9a8] py-2 pr-8 focus:outline-none focus:border-[#b8894f] transition-colors"
                 />
                 <button
@@ -113,32 +133,20 @@ export default function Login() {
               </div>
             </div>
 
-            <div className="flex items-center justify-between text-xs">
-              <label className="flex items-center gap-2 text-[#4a4436]">
-                <input type="checkbox" className="accent-[#b8894f]" /> Remember session
-              </label>
-              <a href="#" className="underline decoration-[#b8894f] text-[#b8894f] underline-offset-2">
-                Forgot password?
-              </a>
-            </div>
-
             <button
               type="submit"
               disabled={loading}
               className="w-full bg-[#1a1a1a] text-[#f4ede4] py-4 text-xs font-medium tracking-[0.15em] hover:bg-[#000] hover:tracking-[0.18em] transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? "AUTHENTICATING..." : "AUTHENTICATE"}
+              {loading ? "CREATING ACCOUNT..." : "REGISTER"}
               {!loading && <span className="transition-transform">→</span>}
             </button>
 
-            <p className="text-[10px] text-[#555] mt-6 text-center tracking-widest uppercase">
-              Don't have an account?{" "}
-              <a 
-                href="/register" 
-                className="text-[#b8894f] underline decoration-[#b8894f] underline-offset-2 hover:text-[#000] transition-colors"
-              >
-                Register here
-              </a>
+            <p className="text-center text-xs text-[#8a8168]">
+              Already have an account?{" "}
+              <Link to="/" className="text-[#b8894f] underline underline-offset-2">
+                Sign in here
+              </Link>
             </p>
           </div>
         </form>
