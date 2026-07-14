@@ -22,11 +22,13 @@ Password: demo1234
 - One-click PDF export per invoice
 - Fully responsive — table view on desktop, card view on mobile
 - Toast notifications for every create/update/delete action
+- Zod validation for API inputs
+- Rate limiting on authentication routes
+- Basic backend authentication tests
 
 ## Tech Stack
-
-**Frontend:** React (Vite) · Tailwind CSS · Axios · React Router · jsPDF
-**Backend:** Node.js · Express · MongoDB (Mongoose) · JWT auth
+Frontend: React (Vite) · TypeScript · Tailwind CSS · Axios · React Router · jsPDF
+Backend: Node.js · Express · TypeScript · MongoDB (Mongoose) · JWT auth · Zod
 **Hosting:** Vercel (frontend) · Render (backend) · MongoDB Atlas (database)
 
 ## Quick Start
