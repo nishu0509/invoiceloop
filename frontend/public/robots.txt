@@ -1,0 +1,4 @@
+﻿User-agent: *
+Allow: /
+
+Sitemap: https://invoiceloop-black.vercel.app/sitemap.xml
