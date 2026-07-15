@@ -6,6 +6,8 @@
 
 **Live demo →** https://invoiceloop-black.vercel.app
 
+**Demo video →** [Watch on Loom](https://loom.com/share/69acaef243704f13ab7109a1c2a326fe)
+
 ## Demo Login
 
 Email:    demo@demo.com
